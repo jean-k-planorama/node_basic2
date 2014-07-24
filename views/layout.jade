@@ -1,0 +1,19 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    h1 #{title}
+    block content
+  footer
+    - if (messages && messages.success) {
+      div
+        span(style='color:#008A00;font-size:larger') &#x2713;
+        span #{messages.success}
+    - }
+    - if (messages && messages.error) {
+      div
+        span(style='color:#8A0000;font-size:larger') &#x2718;
+        span #{messages.error}
+    - }

@@ -1,0 +1,28 @@
+div
+block content
+    div
+        p: a(href='/logout') Logout
+        p
+            | Welcome to our dum site,&nbsp
+            b #{username}
+            | !
+    div#leftcol
+        h2 #{username} private space
+        p Nothing to see here. Yet.
+
+    div#rightcol
+        h3 Change my password
+        form(action='/change_pass', method='post')
+            - if(!undefinedPassword){
+            div
+                label(for='old_password') Old password:
+                input(type='password', name='old_password', autocomplete='off')
+            - }else{
+            div
+                span(color=grey): i Currently no password is defined
+            - }
+            div
+                label(for='new_password') New password:
+                input(type='password', name='new_password', autocomplete='off')
+            div
+                input(type='submit', value='Change password')

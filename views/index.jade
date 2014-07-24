@@ -1,0 +1,11 @@
+
+extends layout
+
+block content
+    - if(!username){
+        p Please connect to DummySite
+        include login
+        include signup
+    - }else{
+        include logged
+    - }
