@@ -4,8 +4,8 @@ User = require('planorama/user');
 
 exports.post = function(req, res){
   var user;
-  var username = req.body.new_username;
-  var password = req.body.new_password;
+  var username = req.body.newUsername;
+  var password = req.body.newPassword;
   if(!username){
     req.flash('error', 'Invalid username');
     return res.redirect('/');

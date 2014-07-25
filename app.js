@@ -1,3 +1,4 @@
+// Dependencies
 
 var express = require('express');
 var http = require('http');
@@ -8,22 +9,21 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var MongoStore = require('connect-mongo')(express); // Syntax for Express <4
 
-var passport = require('passport')
-  ,  LocalStrategy = require('passport-local').Strategy
-  ,  BasicStrategy = require('passport-http').BasicStrategy
-  ,  DigestStrategy = require('passport-http').DigestStrategy;
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
 
 var flash = require('connect-flash');
 
 var routes = require('./routes');
-var change_pass = require('./routes/change_pass');
+var changePass = require('./routes/changePass');
 var signup = require('./routes/signup');
 var logout= require('./routes/logout');
 
-var User = require('planorama/user');
+var User = require('./models/user');
 
 var app = express();
 
+// Settings
 var settings = {
   cookie_secret: 'noderocks',
   db: 'test'
@@ -54,14 +54,6 @@ app.configure(function() {
   app.use(app.router);  // Has to be AFTER app.use(flash()); !!
 });
 
-
-//app.use(favicon());
-//app.use(logger('dev'));
-//app.use(bodyParser.json());
-//app.use(bodyParser.urlencoded());
-//app.use(cookieParser());
-//app.use(express.static(path.join(__dirname, 'public')));
-//app.use(app.router);
 
 passport.use(new LocalStrategy(
   function(username, password, done) {
@@ -110,7 +102,7 @@ app.post('/login',
     failureFlash: 'Failed to log in' })
 );
 app.post('/signup', signup.post);
-app.post('/change_pass', change_pass.post);
+app.post('/change-pass', changePass.post);
 
 
 /// catch 404 and forwarding to error handler

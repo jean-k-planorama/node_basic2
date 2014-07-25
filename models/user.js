@@ -1,7 +1,7 @@
 
 var crypto = require('crypto');
 var _ = require('lodash');
-var MongoHandler = require('./mongohandler')
+var MongoHandler = require('planorama/mongohandler')
 var ObjectID = require('mongodb').ObjectID
 
 

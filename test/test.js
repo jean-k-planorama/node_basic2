@@ -4,15 +4,6 @@ var User = require('planorama/user');
 var request = require('supertest');
 var app = require(path.join(process.cwd(), 'app'));
 
-describe('Array', function(){
-  describe('#indexOf()', function(){
-    it('should return -1 when the value is not present', function(){
-      [1,2,3].indexOf(5).should.equal(-1);
-      [1,2,3].indexOf(0).should.equal(-1);
-    })
-  })
-});
-
 
 describe('User', function(){
   
@@ -54,7 +45,7 @@ describe('User', function(){
       User.findUser(username, function(err, item){
         !err && item.validPassword('pizza66').should.equal(false);
         !err && item.validPassword('pizza33').should.equal(true);
-        item.setPassword('pizza66', 'pizza33');
+        item.resetPassword('pizza66', 'pizza33');
         !err && item.validPassword('pizza66').should.equal(true);
         !err && item.validPassword('pizza33').should.equal(false);
         User.findUser(username, function(err, item2){

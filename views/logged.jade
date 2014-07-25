@@ -12,17 +12,17 @@ block content
 
     div#rightcol
         h3 Change my password
-        form(action='/change_pass', method='post')
+        form(action='/change-pass', method='post')
             - if(!undefinedPassword){
             div
-                label(for='old_password') Old password:
-                input(type='password', name='old_password', autocomplete='off')
+                label(for='oldPassword') Old password:
+                input(type='password', name='oldPassword', autocomplete='off')
             - }else{
             div
                 span(color=grey): i Currently no password is defined
             - }
             div
-                label(for='new_password') New password:
-                input(type='password', name='new_password', autocomplete='off')
+                label(for='newPassword') New password:
+                input(type='password', name='newPassword', autocomplete='off')
             div
                 input(type='submit', value='Change password')
