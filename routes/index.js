@@ -1,6 +1,6 @@
 /* GET home page. */
-exports.index = function(req, res){
-  if(!req.user){
+exports.index = function(req, res) {
+  if(!req.user) {
     return res.render('index', {
       messages: req.flash()
     });

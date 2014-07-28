@@ -7,10 +7,10 @@ var favicon = require('static-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var MongoStore = require('connect-mongo')(express); // Syntax for Express <4
+//var MongoStore = require('connect-mongo')(express); // Syntax for Express <4
 
 var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;
+var passportInit = require('./middlewares/passportInit');
 
 var flash = require('connect-flash');
 
@@ -19,7 +19,6 @@ var changePass = require('./routes/changePass');
 var signup = require('./routes/signup');
 var logout= require('./routes/logout');
 
-var User = require('./models/user');
 
 var app = express();
 
@@ -28,6 +27,8 @@ var settings = {
   cookie_secret: 'noderocks',
   db: 'test'
 };
+
+var routesPath = path.join(process.cwd(), 'routes');
 
 app.locals.title = 'DummySite';
 
@@ -41,57 +42,22 @@ app.configure(function() {
   app.use(express.static('public'));
   app.use(express.bodyParser());
   app.use(express.cookieParser('keyboard cat'));
-//  app.use(express.session({ cookie: { maxAge: 60000 }}));
-  app.use(express.session({
-    secret: settings.cookie_secret,
-    store: new MongoStore({
-      db: settings.db
-    })
-  }));
-  app.use(passport.initialize());
-  app.use(passport.session());
+  app.use(express.session());  // complementary to passport.session() because necessary to use flash()
+  passportInit(app, settings);
   app.use(flash());
   app.use(app.router);  // Has to be AFTER app.use(flash()); !!
 });
 
-
-passport.use(new LocalStrategy(
-  function(username, password, done) {
-    User.findOne({username: username}, function (err, user) {
-      if (err) {
-        done(null, false, { message: err });
-      }
-      if (!user) {
-        return done(null, false, { message: 'Incorrect username' });
-      }
-      if (!user.validPassword(password)) {
-        return done(null, false, { message: 'Incorrect password' });
-      }
-      return done(null, user);
-    });
-  }
-));
-
-
-passport.serializeUser(function(user, done) {
-  done(null, user._id);
-});
-
-passport.deserializeUser(function(id, done) {
-  User.findById(id, function(err, user) {
-    done(err, user);
-  });
-});
-
-
-//passport.serializeUser(function(user, done) {
-//  done(null, user);
-//});
-//
-//passport.deserializeUser(function(user, done) {
-//  done(null, user);
-//});
-
+//// Declare all routes using a single loop
+//[
+//  'index',
+//  'login',
+//  'logout',
+//  'signup',
+//  'changePass'
+//].forEach(function(routeName) {
+//    return require(path.join(routesPath, routeName))(app);
+//  });
 
 app.get('/', routes.index);
 app.get('/logout', logout.get);
@@ -117,7 +83,7 @@ app.use(function(req, res, next) {
 
 // development error handler
 // will print stacktrace
-if (app.get('env') === 'development') {
+if (app.get('env') === 'develop') {  // FIXME called before it's set, no ?
   app.use(function(err, req, res, next) {
     res.render('error', {
       message: err.message,

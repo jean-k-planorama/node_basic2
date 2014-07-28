@@ -1,4 +1,6 @@
 
+// dependencies
+
 var crypto = require('crypto');
 var _ = require('lodash');
 var MongoHandler = require('planorama/mongohandler')
@@ -33,11 +35,11 @@ var User = function(){
       throw new Error('Should have a username');
     }
 
-    if(!(obj.hashedPassword || obj.password)){
+    if(!(obj.hashedPassword || obj.password)) {
       throw new Error('Empty password');
     }
 
-    var hash = function(password){
+    var hash = function(password) {
       if (!password){
         throw new Error('Empty password');
       }
@@ -54,15 +56,18 @@ var User = function(){
     }
 
     that.validPassword = function (password) {
-      return that.hashedPassword === hash(password)
+      return that.hashedPassword === hash(password);
     };
 
     that.resetPassword = function(password, oldPassword) {
-      if (!(that.validPassword(oldPassword) && password)){
-        return false
+      if(!that.validPassword(oldPassword)){
+        throw new Error('Invalid password');
       }
-      that.hashedPassword = hash(password)
-      return true
+      if(!password){
+        throw new Error('Empty password');
+      }
+      that.hashedPassword = hash(password);
+      return that;
     };
 
   that.save = function(callback) {
@@ -72,7 +77,7 @@ var User = function(){
   return that
 };
 
-  user_class.findOne = function(filter, callback){
+  user_class.findOne = function(filter, callback) {
     return handler.findOne(filter, function(err, item){
       err = err || (!item && new Error('No user found'));
       if (err) {
@@ -82,25 +87,25 @@ var User = function(){
     });
   };
 
-  user_class.findById = function(id, callback){
+  user_class.findById = function(id, callback) {
     return user_class.findOne({_id: ObjectID(id)}, callback);
   };
 
-  user_class.findUser = function(username, callback){
+  user_class.findUser = function(username, callback) {
     return user_class.findOne({ username: username }, callback);
   };
 
-  user_class.count = function(query, callback){
+  user_class.count = function(query, callback) {
     return handler.count(query, callback);
   };
 
-  user_class.remove = function(query, callback){
+  user_class.remove = function(query, callback) {
     return handler.remove(query, callback);
   };
 
-  user_class.initCollec = function(callback){
-    function index_init(collection, callback2){
-      collection.ensureIndex({ "username": 1 }, { unique: true }, callback2);
+  user_class.initCollec = function(callback) {
+    function index_init(collection, cb) {
+      collection.ensureIndex({ "username": 1 }, { unique: true }, cb);
     }
     return handler.initCollec(index_init, callback);
   };
