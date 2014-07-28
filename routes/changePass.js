@@ -16,7 +16,6 @@ var changePass = function(req, res) {
       req.flash('error', err.message);
       return res.redirect('/');
     }
-    req.session.er = user; // experimental fix
     req.flash('success', 'Your password has been successfully changed !');
     return res.redirect('/');
   });
