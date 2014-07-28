@@ -1,5 +1,6 @@
 /* GET home page. */
-exports.index = function(req, res) {
+
+var index = function(req, res) {
   if(!req.user) {
     return res.render('index', {
       messages: req.flash()
@@ -10,3 +11,9 @@ exports.index = function(req, res) {
     messages: req.flash()
   })
 };
+
+function addRoutes(app){
+  app.get('/', index);
+}
+
+module.exports = addRoutes;

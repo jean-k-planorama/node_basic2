@@ -11,6 +11,8 @@ app.set('env', process.env.NODE_ENV || 'develop');
 MongoClient.connect(dbName, function(err, db) {
   if(err) throw err;
 
+  app.set('db', db);
+
   server = app.listen(app.get('port'), function() {
     debug('Express server listening on port ' + server.address().port);
   });

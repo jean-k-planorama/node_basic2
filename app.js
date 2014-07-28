@@ -48,27 +48,16 @@ app.configure(function() {
   app.use(app.router);  // Has to be AFTER app.use(flash()); !!
 });
 
-//// Declare all routes using a single loop
-//[
-//  'index',
-//  'login',
-//  'logout',
-//  'signup',
-//  'changePass'
-//].forEach(function(routeName) {
-//    return require(path.join(routesPath, routeName))(app);
-//  });
-
-app.get('/', routes.index);
-app.get('/logout', logout.get);
-app.post('/login',
-  passport.authenticate('local', { successRedirect: '/',
-    failureRedirect: '/',
-    successFlash: 'Successfully logged in',
-    failureFlash: 'Failed to log in' })
-);
-app.post('/signup', signup.post);
-app.post('/change-pass', changePass.post);
+// Declare all routes using a single loop
+[
+  'index',
+  'login',
+  'logout',
+  'signup',
+  'changePass'
+].forEach(function(routeName) {
+    return require(path.join(routesPath, routeName))(app);
+  });
 
 
 /// catch 404 and forwarding to error handler

@@ -1,8 +1,8 @@
 /* Change password request */
 
-User = require('planorama/user');
+var User = require('../models/user');
 
-exports.post = function(req, res) {
+var changePass = function(req, res) {
   var user = User(req.user);
   if(!user.resetPassword(req.body.newPassword, req.body.oldPassword)) {
     req.flash('error', 'Incorrect password');
@@ -19,3 +19,9 @@ exports.post = function(req, res) {
     return res.redirect('/');
   });
 };
+
+function addRoutes(app){
+  app.post('/change-pass', changePass);
+}
+
+module.exports = addRoutes;

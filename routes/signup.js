@@ -1,8 +1,8 @@
 /* Signup post request page */
 
-User = require('planorama/user');
+var User = require('../models/user');
 
-exports.post = function(req, res){
+var signup = function(req, res){
   var user;
   var username = req.body.newUsername;
   var password = req.body.newPassword;
@@ -26,3 +26,10 @@ exports.post = function(req, res){
     return res.redirect('/');
   });
 };
+
+
+function addRoutes(app){
+  app.post('/signup', signup);
+}
+
+module.exports = addRoutes;
