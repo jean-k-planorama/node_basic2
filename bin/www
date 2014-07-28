@@ -1,23 +1,32 @@
 #!/usr/bin/env node
+
+// Dependencies
+
+var async = require('async');
 var debug = require('debug')('my-application');
-var MongoClient = require('mongodb').MongoClient;
+
+// Internal requires
+
+var db = require('../modules/database');
 var app = require('../app');
-var dbName = 'mongodb://127.0.0.1:27017/test';
+
+var env = process.env.NODE_ENV || 'develop';
+
 var server;
 
 app.set('port', process.env.PORT || 3000);
-app.set('env', process.env.NODE_ENV || 'develop');
+app.set('env', env);
 
-MongoClient.connect(dbName, function(err, db) {
-  if(err) throw err;
+db.dbName = env;
 
-  app.set('db', db);
+async.series([
+    db.open,
+    function init_server(cb){
+      server = app.listen(app.get('port'), cb)
+    }
+  ],
+  function confirmation(){
+    console.log('Express server listening on port ' + server.address().port);
+  }
+);
 
-  server = app.listen(app.get('port'), function() {
-    debug('Express server listening on port ' + server.address().port);
-  });
-});
-
-//var server = app.listen(app.get('port'), function() {
-//  debug('Express server listening on port ' + server.address().port);
-//});

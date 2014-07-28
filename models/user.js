@@ -3,10 +3,11 @@
 
 var crypto = require('crypto');
 var _ = require('lodash');
-var MongoHandler = require('planorama/mongohandler')
-var ObjectID = require('mongodb').ObjectID
+var ObjectID = require('mongodb').ObjectID;
 
+// other
 
+var db = require('../modules/database');
 
 /*
 Define a new User:
@@ -26,9 +27,7 @@ Or by other fields
 
 var User = function(){
 
-  var handler = MongoHandler('users');
-
-  user_class = function (obj) {
+  user_class = function User(obj) {
     var that;
 
     if(!(obj && obj.username)){
@@ -39,7 +38,7 @@ var User = function(){
       throw new Error('Empty password');
     }
 
-    var hash = function(password) {
+    var hash = function hash(password) {
       if (!password){
         throw new Error('Empty password');
       }
@@ -55,11 +54,11 @@ var User = function(){
       that._id = ObjectID(obj._id);
     }
 
-    that.validPassword = function (password) {
+    that.validPassword = function validPassword(password) {
       return that.hashedPassword === hash(password);
     };
 
-    that.resetPassword = function(password, oldPassword) {
+    that.resetPassword = function resetPassword(password, oldPassword) {
       if(!that.validPassword(oldPassword)){
         throw new Error('Invalid password');
       }
@@ -70,15 +69,19 @@ var User = function(){
       return that;
     };
 
-  that.save = function(callback) {
-    return handler.save(that, callback);
+    that.save = function save(callback) {
+      return user_class.getCollection().save(that, callback);
+    };
+
+    return that
   };
 
-  return that
-};
+  user_class.getCollection = function getCollection(){
+    return db.collection('users');
+  };
 
-  user_class.findOne = function(filter, callback) {
-    return handler.findOne(filter, function(err, item){
+  user_class.findOne = function findOne(filter, callback) {
+    return user_class.getCollection().findOne(filter, function(err, item){
       err = err || (!item && new Error('No user found'));
       if (err) {
         return callback(err, null);
@@ -87,27 +90,27 @@ var User = function(){
     });
   };
 
-  user_class.findById = function(id, callback) {
+  user_class.findById = function findById(id, callback) {
     return user_class.findOne({_id: ObjectID(id)}, callback);
   };
 
-  user_class.findUser = function(username, callback) {
+  user_class.findUser = function findUser(username, callback) {
     return user_class.findOne({ username: username }, callback);
   };
 
-  user_class.count = function(query, callback) {
-    return handler.count(query, callback);
+  user_class.count = function count(query, callback) {
+    return user_class.getCollection().count(query, callback);
   };
 
-  user_class.remove = function(query, callback) {
-    return handler.remove(query, callback);
+  user_class.remove = function remove(query, callback) {
+    return user_class.getCollection().remove(query, callback);
   };
 
-  user_class.initCollec = function(callback) {
+  user_class.initCollec = function initCollec(callback) {
     function index_init(collection, cb) {
       collection.ensureIndex({ "username": 1 }, { unique: true }, cb);
     }
-    return handler.initCollec(index_init, callback);
+    return db.initCollec(user_class.getCollection(), index_init, callback);
   };
 
   return user_class;

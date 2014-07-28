@@ -8,6 +8,7 @@ var MongoStore = require('connect-mongo')(express); // Syntax for Express <4
 
 // internal requirements
 
+var db = require('../modules/database');
 var User = require('../models/user');
 
 
@@ -25,7 +26,7 @@ var passportInit = function passportInit(app, settings) {
   app.use(passport.session({
     secret: settings.cookie_secret,
     store: new MongoStore({
-      db: settings.db
+      db: db.dbName
     })
   }));
 

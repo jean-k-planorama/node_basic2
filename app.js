@@ -24,8 +24,7 @@ var app = express();
 
 // Settings
 var settings = {
-  cookie_secret: 'noderocks',
-  db: 'test'
+  cookie_secret: 'noderocks'
 };
 
 var routesPath = path.join(process.cwd(), 'routes');
