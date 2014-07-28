@@ -26,7 +26,7 @@ var passportInit = function passportInit(app) {
   app.use(express.session({
     secret: 'nodeRocks',
     store: new MongoStore({
-      db: config.env
+      db: config.dbName
     })
   }));  // complementary to passport.session() because necessary to use flash()
   app.use(passport.initialize());

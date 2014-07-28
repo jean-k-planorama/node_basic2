@@ -1,13 +1,15 @@
 
-var BBO = require('bluebirds').Object;
+var env = process.env.NODE_ENV || 'develop';
 
-var Config = BBO.extend({
-  env: undefined,
+var configs = {
+//  develop: {
+//    dbName: 'develop'
+//  },
+//  mocha: {
+//    dbName: 'mocha'
+//  }
+};
 
-  init: function () {
-    this.env = this.env || process.env.NODE_ENV;
-  }
+var config = configs[env] || { dbName: env};
 
-});
-
-module.exports = Config.create();
+module.exports = config;

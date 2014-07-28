@@ -7,13 +7,9 @@ var path = require('path');
 var request = require('supertest');
 
 
-// Config
+// Define environment (!WARNING: Do before requiring other items)
 
-var config = require('../modules/config');
-config.env = 'mocha';
-
-var env = config.env;
-
+process.env.NODE_ENV = 'mocha';
 
 // Internal objects
 

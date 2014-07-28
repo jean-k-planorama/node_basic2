@@ -26,7 +26,8 @@ var routesPath = path.join(process.cwd(), 'routes');
 
 var config = require('./modules/config');
 
-app.set('env', config.env);
+app.set('env', process.env.NODE_ENV || 'develop');
+app.set('port', process.env.PORT || 3000);
 
 app.locals.title = 'DummySite';
 

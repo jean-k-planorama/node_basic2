@@ -1,25 +1,23 @@
 #!/usr/bin/env node
 
+
 // Dependencies
 
 var async = require('async');
 
-// Config
+// Define environment (!WARNING: Do before requiring other items)
 
-var config = require('../modules/config');
-config.env = process.env.NODE_ENV || 'develop';
-
-var env = config.env;
+process.env.NODE_ENV = process.env.NODE_ENV || 'develop';
 
 // Internal requires
 
+var User = require('../models/user');
 var db = require('../modules/database');
 var app = require('../app');
 
 
 var server;
 
-app.set('port', process.env.PORT || 3000);
 
 async.auto([
     db.open,

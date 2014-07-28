@@ -83,9 +83,7 @@ var User = function(){
   user_class.findOne = function findOne(filter, callback) {
     return user_class.getCollection().findOne(filter, function(err, item){
       err = err || (!item && new Error('No user found'));
-      if (err) {
-        return callback(err, null);
-      }
+      if (err) return callback(err);
       return callback(err, user_class(item));
     });
   };
