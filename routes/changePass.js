@@ -4,8 +4,10 @@ var User = require('../models/user');
 
 var changePass = function(req, res) {
   var user = User(req.user);
-  if(!user.resetPassword(req.body.newPassword, req.body.oldPassword)) {
-    req.flash('error', 'Incorrect password');
+  try{
+    user.resetPassword(req.body.newPassword, req.body.oldPassword)
+  }catch(err) {
+    req.flash('error', err.message);
     return res.redirect('/');
   }
   user.save(function(err, saved_user) {
