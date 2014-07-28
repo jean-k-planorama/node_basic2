@@ -20,15 +20,15 @@ var app = require('../app');
 var server;
 
 app.set('port', process.env.PORT || 3000);
-app.set('env', env);
 
-async.series([
+async.auto([
     db.open,
     function init_server(cb){
       server = app.listen(app.get('port'), cb)
     }
   ],
   function confirmation(){
+    console.log('Running on environment: ' + app.get('env'));
     console.log('Express server listening on port ' + server.address().port);
   }
 );

@@ -1,15 +1,13 @@
 // Dependencies
 
 var express = require('express');
-var http = require('http');
+//var http = require('http');
 var path = require('path');
 var favicon = require('static-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-//var MongoStore = require('connect-mongo')(express); // Syntax for Express <4
+//var logger = require('morgan');
+//var cookieParser = require('cookie-parser');
+//var bodyParser = require('body-parser');
 
-var passport = require('passport');
 var passportInit = require('./middlewares/passportInit');
 
 var flash = require('connect-flash');
@@ -22,12 +20,13 @@ var logout= require('./routes/logout');
 
 var app = express();
 
-// Settings
-var settings = {
-  cookie_secret: 'noderocks'
-};
+
 
 var routesPath = path.join(process.cwd(), 'routes');
+
+var config = require('./modules/config');
+
+app.set('env', config.env);
 
 app.locals.title = 'DummySite';
 
@@ -41,8 +40,7 @@ app.configure(function() {
   app.use(express.static('public'));
   app.use(express.bodyParser());
   app.use(express.cookieParser('keyboard cat'));
-//  app.use(express.session());  // complementary to passport.session() because necessary to use flash()
-  passportInit(app, settings);
+  passportInit(app);
   app.use(flash());
   app.use(app.router);  // Has to be AFTER app.use(flash()); !!
 });

@@ -33,8 +33,6 @@ describe('User', function() {
   var luna = new User({username: username, password: 'pizza33'});
 
   before(function(done) {
-    db.dbName = 'mocha';
-    return db.open(done);
     User.remove({username: username}, done);
   });
 
