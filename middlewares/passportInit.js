@@ -1,14 +1,14 @@
 
 // dependencies
 
+var express = require('express');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
-var express = require('express');
 var MongoStore = require('connect-mongo')(express); // Syntax for Express <4
 
 // internal requirements
 
-var db = require('../modules/database');
+var config = require('../modules/config');
 var User = require('../models/user');
 
 
@@ -19,16 +19,18 @@ var User = require('../models/user');
  * @param settings
  * @returns app
  */
-var passportInit = function passportInit(app, settings) {
+var passportInit = function passportInit(app) {
 
   //  Initialize passport
-  app.use(passport.initialize());
-  app.use(passport.session({
-    secret: settings.cookie_secret,
+
+  app.use(express.session({
+    secret: 'nodeRocks',
     store: new MongoStore({
-      db: db.dbName
+      db: config.env
     })
-  }));
+  }));  // complementary to passport.session() because necessary to use flash()
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   // defines a standard authentification strategy for Users
   passport.use(new LocalStrategy(

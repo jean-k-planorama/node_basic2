@@ -41,7 +41,7 @@ app.configure(function() {
   app.use(express.static('public'));
   app.use(express.bodyParser());
   app.use(express.cookieParser('keyboard cat'));
-  app.use(express.session());  // complementary to passport.session() because necessary to use flash()
+//  app.use(express.session());  // complementary to passport.session() because necessary to use flash()
   passportInit(app, settings);
   app.use(flash());
   app.use(app.router);  // Has to be AFTER app.use(flash()); !!

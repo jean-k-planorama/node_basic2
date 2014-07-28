@@ -3,21 +3,24 @@
 // Dependencies
 
 var async = require('async');
-var debug = require('debug')('my-application');
+
+// Config
+
+var config = require('../modules/config');
+config.env = process.env.NODE_ENV || 'develop';
+
+var env = config.env;
 
 // Internal requires
 
 var db = require('../modules/database');
 var app = require('../app');
 
-var env = process.env.NODE_ENV || 'develop';
 
 var server;
 
 app.set('port', process.env.PORT || 3000);
 app.set('env', env);
-
-db.dbName = env;
 
 async.series([
     db.open,

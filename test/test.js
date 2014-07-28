@@ -1,15 +1,28 @@
+
+// Dependencies
+
 require('chai').should();
 var async = require('async');
 var path = require('path');
-var User = require('../models/user');
-var db = require('../modules/database');
 var request = require('supertest');
+
+
+// Config
+
+var config = require('../modules/config');
+config.env = 'mocha';
+
+var env = config.env;
+
+
+// Internal objects
+
+var db = require('../modules/database');
+var User = require('../models/user');
 var app = require(path.join(process.cwd(), 'app'));
 
 
 before(function init_test_db(done){
-  console.log('init test db...');
-  db.dbName = 'mocha';
   return db.open(done);
 });
 
@@ -122,7 +135,7 @@ describe('User', function() {
 
 describe('requests', function(){
 
-  describe('#/index', function(){
+  describe('#GET / (index)', function(){
     it('should respond', function(done){
       request(app)
         .get('/')
