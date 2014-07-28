@@ -1,9 +1,17 @@
 require('chai').should();
+var async = require('async');
 var path = require('path');
 var User = require('../models/user');
+var db = require('../modules/database');
 var request = require('supertest');
 var app = require(path.join(process.cwd(), 'app'));
 
+
+before(function init_test_db(done){
+  console.log('init test db...');
+  db.dbName = 'mocha';
+  return db.open(done);
+});
 
 describe('User', function() {
   
@@ -12,6 +20,8 @@ describe('User', function() {
   var luna = new User({username: username, password: 'pizza33'});
 
   before(function(done) {
+    db.dbName = 'mocha';
+    return db.open(done);
     User.remove({username: username}, done);
   });
 
@@ -40,27 +50,67 @@ describe('User', function() {
 
   describe('#changePassword()', function() {
     it('should be able to change the password', function(done) {
-      luna.validPassword('pizza33').should.equal(true);
-      luna.validPassword('pizza66').should.equal(false);
-      User.findUser(username, function(err, item){
-        !err && item.validPassword('pizza66').should.equal(false);
-        !err && item.validPassword('pizza33').should.equal(true);
-        item.resetPassword('pizza66', 'pizza33');
-        !err && item.validPassword('pizza66').should.equal(true);
-        !err && item.validPassword('pizza33').should.equal(false);
-        User.findUser(username, function(err, item2){
-          !err && item2.validPassword('pizza66').should.equal(false);
-          !err && item2.validPassword('pizza33').should.equal(true);
-          item.save(function(err, val){
-            User.findUser(username, function(err, item3){
-              !err && item3.validPassword('pizza66').should.equal(true);
-              !err && item3.validPassword('pizza33').should.equal(false);
-              done();
-            });
-          });
 
+      function checkPassword(expected, notExpected){
+        return function(user, cb) {
+          if(!user) {throw new Error('Undefined user');}
+          user.validPassword(expected).should.equal(true);
+          user.validPassword(notExpected).should.equal(false);
+          return cb(null, user);
+        };
+      }
+      function retrieve(user, cb){
+        return User.findOne({username: user.username}, function(err, item){
+          return cb(null, item);
         });
-      });
+      }
+      function saveUser(user, cb) {
+        return user.save(function () {
+          return cb(null, user);
+        });
+      }
+      function changePassword(newPass, oldPass){
+        return function(user, cb) {
+          if(!user) {throw new Error('Undefined user');}
+          try {
+            user.resetPassword(newPass, oldPass);
+          } catch (e) {
+          }
+          return cb(null, user);
+        };
+      }
+
+      async.waterfall(
+        [
+          function(cb){
+            return cb(null, luna);
+          },
+          checkPassword('pizza33', 'pizza66'),
+          saveUser,
+          // tries with wrong old password:
+          changePassword('pizza66', 'pizza44'),
+          // (stays unchanged):
+          checkPassword('pizza33', 'pizza66'),
+          // tries with correct old password:
+          changePassword('pizza66', 'pizza33'),
+          // (successful change):
+          checkPassword('pizza66', 'pizza33'),
+          // reloads from database:
+          retrieve,
+          // (unsaved changes are uneffective):
+          checkPassword('pizza33', 'pizza66'),
+          // reloads modified user and saves it:
+          function(user, cb){
+            return cb(null, luna);
+          },
+          saveUser,
+          // reloads from database:
+          retrieve,
+          // (effective changes):
+          checkPassword('pizza66', 'pizza33')
+        ],
+        done
+      );
     })
   });
 
