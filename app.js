@@ -8,9 +8,7 @@ var favicon = require('static-favicon');
 //var cookieParser = require('cookie-parser');
 //var bodyParser = require('body-parser');
 
-var passportInit = require('./middlewares/passportInit');
-
-var flash = require('connect-flash');
+var sessionInit = require('./middlewares/sessionInit');
 
 var routes = require('./routes');
 var changePass = require('./routes/changePass');
@@ -20,11 +18,8 @@ var logout= require('./routes/logout');
 
 var app = express();
 
-
-
 var routesPath = path.join(process.cwd(), 'routes');
 
-var config = require('./modules/config');
 
 app.set('env', process.env.NODE_ENV || 'develop');
 app.set('port', process.env.PORT || 3000);
@@ -41,9 +36,7 @@ app.configure(function() {
   app.use(express.static('public'));
   app.use(express.bodyParser());
   app.use(express.cookieParser('keyboard cat'));
-  passportInit(app);
-  app.use(flash());
-  app.use(app.router);  // Has to be AFTER app.use(flash()); !!
+  sessionInit(app);
 });
 
 // Declare all routes using a single loop
@@ -70,7 +63,7 @@ app.use(function(req, res, next) {
 
 // development error handler
 // will print stacktrace
-if (app.get('env') === 'develop') {  // FIXME called before it's set, no ?
+if (app.get('env') === 'develop') {
   app.use(function(err, req, res, next) {
     res.render('error', {
       message: err.message,
