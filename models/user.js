@@ -1,11 +1,11 @@
 
-// dependencies
+// Dependencies
 
 var crypto = require('crypto');
 var _ = require('lodash');
 var ObjectID = require('mongodb').ObjectID;
 
-// other
+// Internal requires
 
 var db = require('../modules/database');
 
@@ -25,7 +25,8 @@ Or by other fields
  User.findOne({<filter object>}, callback);
  */
 
-var User = function(){
+
+var User = function userMaker(){
 
   user_class = function User(obj) {
     var that;

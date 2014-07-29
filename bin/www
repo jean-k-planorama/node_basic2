@@ -18,14 +18,14 @@ var app = require('../app');
 
 var server;
 
-
-async.auto([
+// Launches the server (connect to DB then listen)
+async.series([
     db.open,
     function init_server(cb){
       server = app.listen(app.get('port'), cb)
     }
   ],
-  function confirmation(){
+  function confirmation(){  // final callback for confirmation
     console.log('Running on environment: ' + app.get('env'));
     console.log('Express server listening on port ' + server.address().port);
   }

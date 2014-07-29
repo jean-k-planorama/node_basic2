@@ -1,15 +1,18 @@
-/* Change password request */
+/* Adds a path to change a user's password */
 
 var User = require('../models/user');
 
+
 var changePass = function(req, res) {
   var user = User(req.user);
-  try{
+  try {
     user.resetPassword(req.body.newPassword, req.body.oldPassword)
-  }catch(err) {
+  } catch(err) {
+    // if oldPassword does not match or newPassword is not valid
     req.flash('error', err.message);
     return res.redirect('/');
   }
+  // in case of success, try to save into the database
   user.save(function(err, saved_user) {
     err = (err || !saved_user) && new Error('An error occured');
     if (err) {
