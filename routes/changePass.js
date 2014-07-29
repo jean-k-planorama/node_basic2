@@ -4,7 +4,7 @@ var User = require('../models/user');
 
 
 var changePass = function(req, res) {
-  var user = User(req.user);
+  var user = User.create(req.user);
   try {
     user.resetPassword(req.body.newPassword, req.body.oldPassword)
   } catch(err) {

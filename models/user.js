@@ -4,6 +4,7 @@
 var crypto = require('crypto');
 var _ = require('lodash');
 var ObjectID = require('mongodb').ObjectID;
+var BBO = require('bluebirds').Object;
 
 // Internal requires
 
@@ -25,96 +26,85 @@ Or by other fields
  User.findOne({<filter object>}, callback);
  */
 
+var User = BBO.extend({
+    username: '',
+    hashedPassword: '',
 
-var User = function userMaker(){
-
-  user_class = function User(obj) {
-    var that;
-
-    if(!(obj && obj.username)){
-      throw new Error('Should have a username');
-    }
-
-    if(!(obj.hashedPassword || obj.password)) {
-      throw new Error('Empty password');
-    }
-
-    var hash = function hash(password) {
-      if (!password){
-        throw new Error('Empty password');
+    init: function init(){
+      if (!this.username) throw new Error('No username provided');
+      this.hashedPassword = this.hashedPassword || (this.password && this.hash(this.password));
+      if (!this.hashedPassword) throw new Error('No password provided');
+      if (this._id){
+        this._id = ObjectID(this._id);
       }
-      return crypto.createHash('md5').update(password + 'ds3qh2zekq9jrez' + obj.username).digest('hex');
-    };
+    },
 
-    that = {
-      username: obj.username,
-      hashedPassword: obj.hashedPassword || hash(obj.password)
-    };
+    hash: function hash(password) {
+      if (!password) throw new Error('Cannot hash empty password');
+      return crypto.createHash('md5').update(password + 'ds3qh2zekq9jrez' + this.username).digest('hex');
+    },
 
-    if(obj._id){
-      that._id = ObjectID(obj._id);
-    }
+    validPassword: function validPassword(password) {
+      return this.hashedPassword === this.hash(password);
+    },
 
-    that.validPassword = function validPassword(password) {
-      return that.hashedPassword === hash(password);
-    };
-
-    that.resetPassword = function resetPassword(password, oldPassword) {
-      if(!that.validPassword(oldPassword)){
+    resetPassword: function resetPassword(password, oldPassword) {
+      if(!this.validPassword(oldPassword)){
         throw new Error('Invalid password');
       }
       if(!password){
         throw new Error('Empty password');
       }
-      that.hashedPassword = hash(password);
-      return that;
-    };
+      this.hashedPassword = this.hash(password);
+      return this;
+    },
 
-    that.save = function save(callback) {
-      return user_class.getCollection().save(that, callback);
-    };
-
-    return that
-  };
-
-  user_class.getCollection = function getCollection(){
-    return db.collection('users');
-  };
-
-  user_class.findOne = function findOne(filter, callback) {
-    return user_class.getCollection().findOne(filter, function(err, item){
-      err = err || (!item && new Error('No user found'));
-      if (err) return callback(err);
-      return callback(err, user_class(item));
-    });
-  };
-
-  user_class.findById = function findById(id, callback) {
-    return user_class.findOne({_id: ObjectID(id)}, callback);
-  };
-
-  user_class.findUser = function findUser(username, callback) {
-    return user_class.findOne({ username: username }, callback);
-  };
-
-  user_class.count = function count(query, callback) {
-    return user_class.getCollection().count(query, callback);
-  };
-
-  user_class.remove = function remove(query, callback) {
-    return user_class.getCollection().remove(query, callback);
-  };
-
-  user_class.initCollec = function initCollec(callback) {
-    function index_init(collection, cb) {
-      collection.ensureIndex({ "username": 1 }, { unique: true }, cb);
+    save: function save(callback) {
+      return this.constructor.getCollection().save(this, callback);
     }
-    return db.initCollec(user_class.getCollection(), index_init, callback);
-  };
+  },
+  // static attributes:
+  {
+    db: db,
 
-  return user_class;
+    getCollection: function getCollection() {
+      return this.db.collection('users');
+    },
 
-}();
+    findOne: function findOne(filter, callback) {
+      cls = this;
+      return this.getCollection().findOne(filter, function(err, item){
+        err = err || (!item && new Error('No user found'));
+        if (err) return callback(err);
+        return callback(err, cls.create(item));
+      });
+    },
+  
+    findById: function findById(id, callback) {
+      return this.findOne({_id: ObjectID(id)}, callback);
+    },
+    
+    findByName: function findUser(username, callback) {
+      return this.findOne({ username: username }, callback);
+    },
+    
+    count: function count(query, callback) {
+      return this.getCollection().count(query, callback);
+    },
+    
+    remove: function remove(query, callback) {
+      return this.getCollection().remove(query, callback);
+    },
+    
+    initCollec: function initCollec(callback) {
+      function index_init(collection, cb) {
+        collection.ensureIndex({ "username": 1 }, { unique: true }, cb);
+      }
+      return this.db.initCollec(this.getCollection(), index_init, callback);
+    }
+
+  }
+);
 
 
 module.exports = User;

@@ -26,7 +26,7 @@ describe('User', function() {
   
   var username = 'Luna';
 
-  var luna = new User({username: username, password: 'pizza33'});
+  var luna = User.create({username: username, password: 'pizza33'});
 
   before(function(done) {
     User.remove({username: username}, done);
