@@ -52,7 +52,7 @@ var passportInit = function passportInit(app) {
 
   // defines how to retrieve the user from a session object (by its ID)
   passport.deserializeUser(function(id, done) {
-    User.findById(id, done);
+    return User.findById(id, done);
   });
 
   return app;

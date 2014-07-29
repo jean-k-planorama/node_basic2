@@ -32,6 +32,15 @@ describe('User', function() {
     User.remove({username: username}, done);
   });
 
+  describe('#init()', function() {
+    it('should have hashed the password', function (done) {
+      luna.should.not.have.property('password');
+      luna.should.have.property('hashedPassword');
+      luna.hashedPassword.should.equal(luna.hash('pizza33'));
+      done();
+    })
+  });
+
   describe('#save()', function() {
     it('should save without error', function(done) {
       luna.should.not.have.property('_id');
@@ -137,3 +146,25 @@ describe('requests', function(){
     })
   })
 });
+
+//// SKELETON
+//describe('#GET / (index)', function () {
+//  before(function () { /* create selenium driver */ });
+//
+//  describe("when used by a logged in user", function () {
+//    before(function () { /* log in */ });
+//
+//    it(...
+//
+//      it(...
+//
+//      after(function () { /* log out */ });
+//  });
+//
+//  describe("when used by a logged out user", function () {
+//    it(...
+//
+//      it(...
+//  });
+//  after(function () { /* shut down the driver */ });
+//});

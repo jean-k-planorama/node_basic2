@@ -5,7 +5,7 @@ var logout = function(req, res){
     req.logout();
     req.flash('success', 'Successfully logged out');
   }
-  res.redirect('/');
+  return res.redirect('/');
 };
 
 

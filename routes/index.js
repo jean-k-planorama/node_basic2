@@ -7,7 +7,7 @@ var index = function(req, res) {
       messages: req.flash()
     });
   }
-  res.render('index', {
+  return res.render('index', {
     // no username provided => will display logged-in page
     username: req.user.username,
     messages: req.flash()
