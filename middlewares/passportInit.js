@@ -1,15 +1,11 @@
 
 // External dependencies
 
-var express = require('express');
 var passport = require('passport');
-var flash = require('connect-flash');
 var LocalStrategy = require('passport-local').Strategy;
-var MongoStore = require('connect-mongo')(express); // Syntax for Express <4
 
 // Internal requirements
 
-var config = require('../modules/config');
 var User = require('../models/user');
 
 
@@ -59,32 +55,4 @@ var passportInit = function passportInit(app) {
 };
 
 
-/**
- * sessionInit
- *
- * @info Initiates how the app handles session: login/out, session persistence, flash messages
- *
- * @param app
- * @returns {*}
- */
-var sessionInit = function sessionInit(app) {
-
-  // session initialization (complementary to passport.session() because necessity to use flash())
-  app.use(express.session({
-    secret: 'nodeRocks',
-    store: new MongoStore({
-      db: config.dbName
-      // later: add here username, password... from config
-    })
-  }));
-
-  app.use(flash());
-
-  //  Passport session initialization
-  app = passportInit(app);
-
-  return app;
-};
-
-
-module.exports = sessionInit;
+module.exports = passportInit;

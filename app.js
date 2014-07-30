@@ -1,15 +1,19 @@
-// Dependencies
+// External dependencies
 
 var express = require('express');
 var path = require('path');
 var favicon = require('static-favicon');
+var flash = require('connect-flash');
+var MongoStore = require('connect-mongo')(express); // Syntax for Express <4
 
-var sessionInit = require('./middlewares/sessionInit');
+// Internal requirements
 
-var routes = require('./routes');
-var changePass = require('./routes/changePass');
-var signup = require('./routes/signup');
-var logout= require('./routes/logout');
+var config = require('../modules/config');
+
+var passportInit = require('./middlewares/passportInit');
+
+
+// App initialization
 
 
 var app = express();
@@ -32,8 +36,19 @@ app.configure(function() {
   app.use(express.static('public'));
   app.use(express.bodyParser());
   app.use(express.cookieParser('keyboard cat'));
-  sessionInit(app);
-  app.use(app.router);  // Has to be done only at the end of flash and passport initialization
+  // session initialization (complementary to passport.session() because necessity to use flash())
+  app.use(express.session({
+    secret: 'nodeRocks',
+    store: new MongoStore({
+      db: config.dbName
+      // later: add here username, password... from config
+    })
+  }));
+  app.use(flash());
+  // passport initialization for authentification
+  passportInit(app);
+  // Has to be done only at the end of flash and passport initialization
+  app.use(app.router);
 });
 
 // Declare all routes using a single loop
