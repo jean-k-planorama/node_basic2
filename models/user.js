@@ -2,12 +2,10 @@
 // Dependencies
 
 var crypto = require('crypto');
-var _ = require('lodash');
-var ObjectID = require('mongodb').ObjectID;
-var BBO = require('bluebirds').Object;
 
 // Internal requires
 
+var BaseModel = require('planorama/basicModel');
 var db = require('../modules/database');
 
 
@@ -22,15 +20,13 @@ var db = require('../modules/database');
  * Get a User from an object retrieved directly from Database:
  * user = User.create({username: <username>, hashedPassword: <hashedPassword>, _id: <_id>});
 
- * Find a user by name:
- * User.findByName(username, callback);
  * Find a user by mongo id:
  * User.findById(id, callback);
  * Or by other fields
  * User.findOne({<filter object>}, callback);
  *
  **********************************************************************************************************************/
-var User = BBO.extend({
+var User = BaseModel.extend({
 
     username: '',
     hashedPassword: '',
@@ -77,18 +73,6 @@ var User = BBO.extend({
       }
       this.hashedPassword = this.hash(password);
       return this;
-    },
-
-    /**
-     * save
-     *
-     * @info saves into the users collection
-     *
-     * @param callback
-     * @returns {*|Session}
-     */
-    save: function(callback) {
-      return this.constructor.getCollection().save(this, callback);
     }
   },
 
@@ -98,7 +82,8 @@ var User = BBO.extend({
 
   {
 
-    db: db,
+    _collectionName: 'users',
+    _db: db,
 
     /**
      * create
@@ -120,9 +105,8 @@ var User = BBO.extend({
       // Instanciation
 
       newdef.username = def.username;
-      // convert _id as a Mongo ID if provided
       if (def._id) {
-        newdef._id = new ObjectID(def._id);  // works also if def._id is already an ObjectID
+        newdef._id = def._id;
       }
       instance = this._super(newdef);
 
@@ -131,60 +115,6 @@ var User = BBO.extend({
       instance.hashedPassword = def.hashedPassword || instance.hash(def.password);
 
       return instance;
-    },
-
-    getCollection: function() {
-      return this.db.collection('users');
-    },
-
-    /**
-     * findOne
-     *
-     * @param filter
-     * @param callback
-     * @returns {*}
-     */
-    findOne: function(filter, callback) {
-      var self = this;
-      return this.getCollection().findOne(filter, function(err, item){
-        err = err || (!item && new Error('No user found'));
-        if (err) return callback(err);
-        return callback(err, self.create(item));
-      });
-    },
-
-    /**
-     * findById
-     *
-     * @param id
-     * @param callback
-     * @returns {*}
-     */
-    findById: function(id, callback) {
-      // Important: make the conversion into a valid Mongo ID before searching
-      return this.findOne({_id: new ObjectID(id)}, callback);
-    },
-
-    /**
-     * count
-     *
-     * @param query
-     * @param callback
-     * @returns {*|null}
-     */
-    count: function(query, callback) {
-      return this.getCollection().count(query, callback);
-    },
-
-    /**
-     * remove
-     *
-     * @param query
-     * @param callback
-     * @returns {*}
-     */
-    remove: function(query, callback) {
-      return this.getCollection().remove(query, callback);
     },
 
     /**
