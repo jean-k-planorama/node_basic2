@@ -8,7 +8,7 @@ var MongoStore = require('connect-mongo')(express); // Syntax for Express <4
 
 // Internal requirements
 
-var config = require('../modules/config');
+var config = require('./modules/config');
 
 var passportInit = require('./middlewares/passportInit');
 
