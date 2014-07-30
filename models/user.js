@@ -35,26 +35,6 @@ var User = BBO.extend({
     username: '',
     hashedPassword: '',
 
-    /**
-     * init
-     *
-     * @info initialization comportment setting for different formats of input parameters
-     */
-    init: function init(){
-      if (!this.username) throw new Error('No username provided');
-
-      // copy hash if directly provided else hash the password
-      this.hashedPassword = this.hashedPassword || (this.password && this.hash(this.password));
-      if (!this.hashedPassword) throw new Error('No password provided');
-
-      // and throw away the password (important)
-      delete this.password;
-
-      // convert _id as a Mongo ID if provided
-      if (this._id){
-        this._id = ObjectID(this._id);
-      }
-    },
 
     /**
      * hash
@@ -64,7 +44,7 @@ var User = BBO.extend({
      * @param password
      * @returns {*}
      */
-    hash: function hash(password) {
+    hash: function(password) {
       if (!password) throw new Error('Cannot hash empty password');
       return crypto.createHash('md5').update(password + 'ds3qh2zekq9jrez' + this.username).digest('hex');
     },
@@ -74,7 +54,7 @@ var User = BBO.extend({
      * @param password
      * @returns {boolean}
      */
-    validPassword: function validPassword(password) {
+    validPassword: function(password) {
       return this.hashedPassword === this.hash(password);
     },
 
@@ -88,7 +68,7 @@ var User = BBO.extend({
      * @param oldPassword
      * @returns {User}
      */
-    resetPassword: function resetPassword(password, oldPassword) {
+    resetPassword: function(password, oldPassword) {
       if(!this.validPassword(oldPassword)){
         throw new Error('Invalid password');
       }
@@ -107,18 +87,53 @@ var User = BBO.extend({
      * @param callback
      * @returns {*|Session}
      */
-    save: function save(callback) {
+    save: function(callback) {
       return this.constructor.getCollection().save(this, callback);
     }
   },
 
-  // static attributes:
+  /**
+  static attributes:
+  **/
 
   {
 
     db: db,
 
-    getCollection: function getCollection() {
+    /**
+     * create
+     *
+     * @info initialization comportment setting for different formats of input parameters
+     * @param def
+     */
+    create: function(def){
+
+      var newdef = {};
+      var instance;
+
+      // Checks parameter presence
+
+      if (!def.username) throw new Error('No username provided');
+
+      if (!(def.hashedPassword || def.password)) throw new Error('No password provided');
+
+      // Instanciation
+
+      newdef.username = def.username;
+      // convert _id as a Mongo ID if provided
+      if (def._id) {
+        newdef._id = new ObjectID(def._id);  // works also if def._id is already an ObjectID
+      }
+      instance = this._super(newdef);
+
+      // Add the hashed password
+
+      instance.hashedPassword = def.hashedPassword || instance.hash(def.password);
+
+      return instance;
+    },
+
+    getCollection: function() {
       return this.db.collection('users');
     },
 
@@ -129,12 +144,12 @@ var User = BBO.extend({
      * @param callback
      * @returns {*}
      */
-    findOne: function findOne(filter, callback) {
-      cls = this;
+    findOne: function(filter, callback) {
+      var self = this;
       return this.getCollection().findOne(filter, function(err, item){
         err = err || (!item && new Error('No user found'));
         if (err) return callback(err);
-        return callback(err, cls.create(item));
+        return callback(err, self.create(item));
       });
     },
 
@@ -145,9 +160,9 @@ var User = BBO.extend({
      * @param callback
      * @returns {*}
      */
-    findById: function findById(id, callback) {
+    findById: function(id, callback) {
       // Important: make the conversion into a valid Mongo ID before searching
-      return this.findOne({_id: ObjectID(id)}, callback);
+      return this.findOne({_id: new ObjectID(id)}, callback);
     },
 
     /**
@@ -157,7 +172,7 @@ var User = BBO.extend({
      * @param callback
      * @returns {*|null}
      */
-    count: function count(query, callback) {
+    count: function(query, callback) {
       return this.getCollection().count(query, callback);
     },
 
@@ -168,7 +183,7 @@ var User = BBO.extend({
      * @param callback
      * @returns {*}
      */
-    remove: function remove(query, callback) {
+    remove: function(query, callback) {
       return this.getCollection().remove(query, callback);
     },
 
@@ -180,9 +195,9 @@ var User = BBO.extend({
      * @param callback
      * @returns {*}
      */
-    initCollec: function initCollec(callback) {
+    initCollec: function(callback) {
       function indexInit(collection, cb) {
-        collection.ensureIndex({ "username": 1 }, { unique: true }, cb);
+        collection.ensureIndex({ username: 1 }, { unique: true }, cb);
       }
       return this.db.initCollec(this.getCollection(), indexInit, callback);
     }

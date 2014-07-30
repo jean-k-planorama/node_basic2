@@ -6,12 +6,8 @@ var signup = function(req, res){
   var user;
   var username = req.body.newUsername;
   var password = req.body.newPassword;
-  if(!username){
-    req.flash('error', 'Invalid username');
-    return res.redirect('/');
-  }
   try{
-    user = User({username: username, password: password});
+    user = User.create({username: username, password: password});
   }catch(err){
     req.flash('error', err.message);
     return res.redirect('/');

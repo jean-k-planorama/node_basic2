@@ -7,11 +7,10 @@ var async = require('async');
 
 // Define environment (!WARNING: Do before requiring other items)
 
-process.env.NODE_ENV = process.env.NODE_ENV || 'develop';
+process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
 
 // Internal requires
 
-var User = require('../models/user');
 var db = require('../modules/database');
 var app = require('../app');
 
@@ -21,11 +20,11 @@ var server;
 // Launches the server (connect to DB then listen)
 async.series([
     db.open,
-    function init_server(cb){
-      server = app.listen(app.get('port'), cb)
+    function initServer(cb){
+      server = app.listen(app.get('port'), cb);
     }
   ],
-  function confirmation(){  // final callback for confirmation
+  function (){  // final callback for confirmation
     console.log('Running on environment: ' + app.get('env'));
     console.log('Express server listening on port ' + server.address().port);
   }

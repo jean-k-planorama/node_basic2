@@ -1,12 +1,8 @@
 // Dependencies
 
 var express = require('express');
-//var http = require('http');
 var path = require('path');
 var favicon = require('static-favicon');
-//var logger = require('morgan');
-//var cookieParser = require('cookie-parser');
-//var bodyParser = require('body-parser');
 
 var sessionInit = require('./middlewares/sessionInit');
 
@@ -21,7 +17,7 @@ var app = express();
 var routesPath = path.join(process.cwd(), 'routes');
 
 
-app.set('env', process.env.NODE_ENV || 'develop');
+app.set('env', process.env.NODE_ENV || 'dev');
 app.set('port', process.env.PORT || 3000);
 
 app.locals.title = 'DummySite';
@@ -37,6 +33,7 @@ app.configure(function() {
   app.use(express.bodyParser());
   app.use(express.cookieParser('keyboard cat'));
   sessionInit(app);
+  app.use(app.router);  // Has to be done only at the end of flash and passport initialization
 });
 
 // Declare all routes using a single loop
@@ -63,7 +60,7 @@ app.use(function(req, res, next) {
 
 // development error handler
 // will print stacktrace
-if (app.get('env') === 'develop') {
+if (app.get('env') === 'dev') {
   app.use(function(err, req, res, next) {
     res.render('error', {
       message: err.message,

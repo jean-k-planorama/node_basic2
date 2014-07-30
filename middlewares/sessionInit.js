@@ -83,8 +83,6 @@ var sessionInit = function sessionInit(app) {
   //  Passport session initialization
   app = passportInit(app);
 
-  app.use(app.router);  // Has to be done only at the end of session initialization
-
   return app;
 };
 
