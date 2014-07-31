@@ -36,7 +36,7 @@ describe('User', function() {
     it('should have hashed the password', function (done) {
       luna.should.not.have.property('password');
       luna.should.have.property('hashedPassword');
-      luna.hashedPassword.should.equal(luna.hash('pizza33'));
+      luna.validPassword('pizza33').should.equal(true);
       done();
     })
   });

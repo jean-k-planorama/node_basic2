@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "async": "^0.9.0",
+    "bcrypt": "^0.7.8",
     "bluebirds": "0.0.4",
     "body-parser": "~1.0.0",
     "chai": "^1.9.1",

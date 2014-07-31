@@ -1,7 +1,7 @@
 
 // Dependencies
 
-var crypto = require('crypto');
+var bcrypt = require('bcrypt');
 
 // Internal requires
 
@@ -33,25 +33,12 @@ var User = BaseModel.extend({
 
 
     /**
-     * hash
-     *
-     * @info defines a username-dependant hash algorithm for password storing and checking
-     *
-     * @param password
-     * @returns {*}
-     */
-    hash: function(password) {
-      if (!password) throw new Error('Cannot hash empty password');
-      return crypto.createHash('md5').update(password + 'ds3qh2zekq9jrez' + this.username).digest('hex');
-    },
-
-    /**
      * validPassword
      * @param password
      * @returns {boolean}
      */
     validPassword: function(password) {
-      return this.hashedPassword === this.hash(password);
+      return bcrypt.compareSync(password, this.hashedPassword);
     },
 
     /**
@@ -71,7 +58,7 @@ var User = BaseModel.extend({
       if(!password){
         throw new Error('Empty password');
       }
-      this.hashedPassword = this.hash(password);
+      this.hashedPassword = this.constructor.hash(password);
       return this;
     }
   },
@@ -112,9 +99,23 @@ var User = BaseModel.extend({
 
       // Add the hashed password
 
-      instance.hashedPassword = def.hashedPassword || instance.hash(def.password);
+      instance.hashedPassword = def.hashedPassword || this.hash(def.password);
 
       return instance;
+    },
+
+
+    /**
+     * _hash
+     *
+     * @info defines a salted hash algorithm for password storing and checking
+     *
+     * @param password
+     * @returns {*}
+     */
+    hash: function(password) {
+      if (!password) throw new Error('Cannot hash empty password');
+      return bcrypt.hashSync(password, 10);
     },
 
     /**
