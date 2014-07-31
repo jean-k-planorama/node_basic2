@@ -9,7 +9,7 @@ var request = require('supertest');
 
 // Define environment (!WARNING: Do before requiring other items)
 
-process.env.NODE_ENV = 'mocha';
+require('../modules/config').set('unit-test');
 
 // Internal objects
 
