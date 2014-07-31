@@ -115,7 +115,8 @@ var User = BaseModel.extend({
      */
     hash: function(password) {
       if (!password) throw new Error('Cannot hash empty password');
-      return bcrypt.hashSync(password, 10);
+      // the number of rounds (here 4) is a tradeoff between security and rapidity
+      return bcrypt.hashSync(password, 4);
     },
 
     /**
