@@ -1,33 +1,28 @@
-// Dependencies
+// External dependencies
 
 var express = require('express');
-var http = require('http');
 var path = require('path');
 var favicon = require('static-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+var flash = require('connect-flash');
 var MongoStore = require('connect-mongo')(express); // Syntax for Express <4
 
-var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;
+// Internal requirements
 
-var flash = require('connect-flash');
+var config = require('./modules/config');
 
-var routes = require('./routes');
-var changePass = require('./routes/changePass');
-var signup = require('./routes/signup');
-var logout= require('./routes/logout');
+var passportInit = require('./middlewares/passportInit');
 
-var User = require('./models/user');
+
+// App initialization
+
 
 var app = express();
 
-// Settings
-var settings = {
-  cookie_secret: 'noderocks',
-  db: 'test'
-};
+var routesPath = path.join(process.cwd(), 'routes');
+
+
+app.set('env', process.env.NODE_ENV || 'dev');
+app.set('port', process.env.PORT || 3000);
 
 app.locals.title = 'DummySite';
 
@@ -41,68 +36,31 @@ app.configure(function() {
   app.use(express.static('public'));
   app.use(express.bodyParser());
   app.use(express.cookieParser('keyboard cat'));
-//  app.use(express.session({ cookie: { maxAge: 60000 }}));
+  // session initialization (complementary to passport.session() because necessity to use flash())
   app.use(express.session({
-    secret: settings.cookie_secret,
+    secret: 'nodeRocks',
     store: new MongoStore({
-      db: settings.db
+      db: config.dbName
+      // later: add here username, password... from config
     })
   }));
-  app.use(passport.initialize());
-  app.use(passport.session());
   app.use(flash());
-  app.use(app.router);  // Has to be AFTER app.use(flash()); !!
+  // passport initialization for authentification
+  passportInit(app);
+  // Has to be done only at the end of flash and passport initialization
+  app.use(app.router);
 });
 
-
-passport.use(new LocalStrategy(
-  function(username, password, done) {
-    User.findOne({username: username}, function (err, user) {
-      if (err) {
-        done(null, false, { message: err });
-      }
-      if (!user) {
-        return done(null, false, { message: 'Incorrect username' });
-      }
-      if (!user.validPassword(password)) {
-        return done(null, false, { message: 'Incorrect password' });
-      }
-      return done(null, user);
-    });
-  }
-));
-
-
-passport.serializeUser(function(user, done) {
-  done(null, user._id);
-});
-
-passport.deserializeUser(function(id, done) {
-  User.findById(id, function(err, user) {
-    done(err, user);
+// Declare all routes using a single loop
+[
+  'index',
+  'login',
+  'logout',
+  'signup',
+  'change-pass'
+].forEach(function(routeName) {
+    return require(path.join(routesPath, routeName))(app);
   });
-});
-
-
-//passport.serializeUser(function(user, done) {
-//  done(null, user);
-//});
-//
-//passport.deserializeUser(function(user, done) {
-//  done(null, user);
-//});
-
-
-app.get('/', routes.index);
-app.get('/logout', logout.get);
-app.post('/login',
-  passport.authenticate('local', { successRedirect: '/',
-    failureRedirect: '/',
-    successFlash: 'Successfully logged in',
-    failureFlash: 'Failed to log in' })
-);
-app.post('/signup', signup.post);
-app.post('/change-pass', changePass.post);
 
 
 /// catch 404 and forwarding to error handler
@@ -117,7 +75,7 @@ app.use(function(req, res, next) {
 
 // development error handler
 // will print stacktrace
-if (app.get('env') === 'development') {
+if (app.get('env') === 'dev') {
   app.use(function(err, req, res, next) {
     res.render('error', {
       message: err.message,

@@ -1,113 +1,140 @@
 
-var crypto = require('crypto');
-var _ = require('lodash');
-var MongoHandler = require('planorama/mongohandler')
-var ObjectID = require('mongodb').ObjectID
+// Dependencies
+
+var bcrypt = require('bcrypt');
+
+// Internal requires
+
+var BaseModel = require('planorama/basicModel');
+var db = require('../modules/database');
 
 
+/***********************************************************************************************************************
+ * User
+ ***********************************************************************************************************************
+ *
+ * Define a new User:
+ * user = User.create({username: <username>, password: <password>}); // initiate object
+ * user.save(callback); // saves object to DB and adds an _id to user
 
-/*
-Define a new User:
-  user = User({username: <username>, password: <password>}); // initiate object
-  user.save(callback); // saves object to DB and adds an _id to user
+ * Get a User from an object retrieved directly from Database:
+ * user = User.create({username: <username>, hashedPassword: <hashedPassword>, _id: <_id>});
 
-Get a User from an object retrieved directly from Database:
-  user = User({username: <username>, hashedPassword: <hashedPassword>, _id: <_id>});
+ * Find a user by mongo id:
+ * User.findById(id, callback);
+ * Or by other fields
+ * User.findOne({<filter object>}, callback);
+ *
+ **********************************************************************************************************************/
+var User = BaseModel.extend({
 
-Find a user by name:
- User.findUser(username, callback);
-Find a user by mongo id:
- User.findById(id, callback);
-Or by other fields
- User.findOne({<filter object>}, callback);
- */
+    username: '',
+    hashedPassword: '',
 
-var User = function(){
 
-  var handler = MongoHandler('users');
+    /**
+     * validPassword
+     * @param password
+     * @returns {boolean}
+     */
+    validPassword: function(password) {
+      return bcrypt.compareSync(password, this.hashedPassword);
+    },
 
-  user_class = function (obj) {
-    var that;
-
-    if(!(obj && obj.username)){
-      throw new Error('Should have a username');
-    }
-
-    if(!(obj.hashedPassword || obj.password)){
-      throw new Error('Empty password');
-    }
-
-    var hash = function(password){
-      if (!password){
+    /**
+     * resetPassword
+     *
+     * @info redefines the password only if the oldPassword matches
+     * (! does not automatically save in the database)
+     *
+     * @param password
+     * @param oldPassword
+     * @returns {User}
+     */
+    resetPassword: function(password, oldPassword) {
+      if(!this.validPassword(oldPassword)){
+        throw new Error('Invalid password');
+      }
+      if(!password){
         throw new Error('Empty password');
       }
-      return crypto.createHash('md5').update(password + 'ds3qh2zekq9jrez' + obj.username).digest('hex');
-    };
+      this.hashedPassword = this.constructor.hash(password);
+      return this;
+    }
+  },
 
-    that = {
-      username: obj.username,
-      hashedPassword: obj.hashedPassword || hash(obj.password)
-    };
+  /**
+  static attributes:
+  **/
 
-    if(obj._id){
-      that._id = ObjectID(obj._id);
+  {
+
+    _collectionName: 'users',
+    _db: db,
+
+    /**
+     * create
+     *
+     * @info initialization comportment setting for different formats of input parameters
+     * @param def
+     */
+    create: function(def){
+
+      var instance;
+
+      // Checks parameter presence
+
+      if (!def.username) throw new Error('No username provided');
+
+      if (!(def.hashedPassword || def.password)) throw new Error('No password provided');
+
+
+      // Add the hashed password...
+      def.hashedPassword = def.hashedPassword || this.hash(def.password);
+      // ... and remove the clear password if present
+      delete def.password;
+
+      // Instanciation
+
+      instance = this._super(def);
+
+
+
+      return instance;
+    },
+
+
+    /**
+     * _hash
+     *
+     * @info defines a salted hash algorithm for password storing and checking
+     *
+     * @param password
+     * @returns {*}
+     */
+    hash: function(password) {
+      if (!password) throw new Error('Cannot hash empty password');
+      // the number of rounds (here 4) is a tradeoff between security and rapidity
+      return bcrypt.hashSync(password, 4);
+    },
+
+    /**
+     * initCollec
+     *
+     * @info re-initiates the Users collection (erase data and reset indexes)
+     *
+     * @param callback
+     * @returns {*}
+     */
+    initCollec: function(callback) {
+      function indexInit(collection, cb) {
+        collection.ensureIndex({ username: 1 }, { unique: true }, cb);
+      }
+      return this.db.initCollec(this.getCollection(), indexInit, callback);
     }
 
-    that.validPassword = function (password) {
-      return that.hashedPassword === hash(password)
-    };
-
-    that.resetPassword = function(password, oldPassword) {
-      if (!(that.validPassword(oldPassword) && password)){
-        return false
-      }
-      that.hashedPassword = hash(password)
-      return true
-    };
-
-  that.save = function(callback) {
-    return handler.save(that, callback);
-  };
-
-  return that
-};
-
-  user_class.findOne = function(filter, callback){
-    return handler.findOne(filter, function(err, item){
-      err = err || (!item && new Error('No user found'));
-      if (err) {
-        return callback(err, null);
-      }
-      return callback(err, user_class(item));
-    });
-  };
-
-  user_class.findById = function(id, callback){
-    return user_class.findOne({_id: ObjectID(id)}, callback);
-  };
-
-  user_class.findUser = function(username, callback){
-    return user_class.findOne({ username: username }, callback);
-  };
-
-  user_class.count = function(query, callback){
-    return handler.count(query, callback);
-  };
-
-  user_class.remove = function(query, callback){
-    return handler.remove(query, callback);
-  };
-
-  user_class.initCollec = function(callback){
-    function index_init(collection, callback2){
-      collection.ensureIndex({ "username": 1 }, { unique: true }, callback2);
-    }
-    return handler.initCollec(index_init, callback);
-  };
-
-  return user_class;
-
-}();
+  }
+);
 
 
 module.exports = User;
