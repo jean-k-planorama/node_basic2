@@ -80,7 +80,6 @@ var User = BaseModel.extend({
      */
     create: function(def){
 
-      var newdef = {};
       var instance;
 
       // Checks parameter presence
@@ -89,17 +88,17 @@ var User = BaseModel.extend({
 
       if (!(def.hashedPassword || def.password)) throw new Error('No password provided');
 
+
+      // Add the hashed password...
+      def.hashedPassword = def.hashedPassword || this.hash(def.password);
+      // ... and remove the clear password if present
+      delete def.password;
+
       // Instanciation
 
-      newdef.username = def.username;
-      if (def._id) {
-        newdef._id = def._id;
-      }
-      instance = this._super(newdef);
+      instance = this._super(def);
 
-      // Add the hashed password
 
-      instance.hashedPassword = def.hashedPassword || this.hash(def.password);
 
       return instance;
     },
