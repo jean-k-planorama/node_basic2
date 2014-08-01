@@ -57,7 +57,7 @@ app.configure(function() {
   'login',
   'logout',
   'signup',
-  'changePass'
+  'change-pass'
 ].forEach(function(routeName) {
     return require(path.join(routesPath, routeName))(app);
   });
