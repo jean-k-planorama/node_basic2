@@ -27,13 +27,17 @@ var configModels = {
 /**
  * config object (singleton):
  * {
- *  env: contains the current environment (== process.env.NODE_ENV),
+ *  // VARIABLE PROPERTIES
+ *  env: ..., // contains the current environment (== process.env.NODE_ENV)
  *  dbName: ...,
  *  (dbPath): ..,
  *  (<other db credentials...>): ...,
+ *  // STATIC PROPERTIES
+ *  _envList: contains
  *  set: function of env initiating all parameters above
  */
 var config = {
+  _envList: _.keys(configModels),
   set: function(env){
     var model = configModels[env];
     if (!model) throw new Error('Unknown environment: ' + env);
